@@ -27,4 +27,13 @@ You can use the following JSON body as exampmle:
   "question": "which is the fairest of all the cities you have been to?"
 }
 ```
-### TODO: more stuff...
+### Local environment set up:
+
+
+
+```bash
+cp env.example .env
+# fill in your env variables
+npm install
+node index.js
+```
