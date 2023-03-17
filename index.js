@@ -3,7 +3,7 @@ require('dotenv').config()
 const express = require('express')
 const fs = require('fs')
 const axios = require('axios')
-
+const { Readable } = require('stream');
 const app = express()
 
 let brains = {}
@@ -16,13 +16,13 @@ console.log(service_path)
 app.use(express.json())
 
 
-async function getMp3Url(text) {
+async function getMp3Url(text,voiceId) {
     let res = await axios(
         {
-            method: 'post',
-            url: 'https://api.elevenlabs.io/v1/text-to-speech/5aT436ZVbowepjRYiLPL',
+            method: 'POST',
+            responseType: "arraybuffer",
+            url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
             headers: {
-                'accept': 'audio/mpeg',
                 'xi-api-key': apiKey,
                 'Content-Type': 'application/json'
             },
@@ -56,6 +56,20 @@ app.post(`/upsertBrain`, async (req, res) => {
     res.json(result.data)
 })
 
+
+
+app.get(`/getVoice`, async (req,res ) => {
+    const {text, voiceId} = req.query
+
+    let mp3file = await getMp3Url(text,voiceId)
+    const buffer = Buffer.from(mp3file.data);
+    res.set({
+        'Content-Type': 'audio/mpeg'
+    })
+    Readable.from(buffer).pipe(res)
+
+})
+
 app.post(`/askBrain`, async (req, res) => {
     const {name, question} = req.body
     const questionPrefix = `You are a NPC in a roleplaying game. You are playing as ${name}. The players will ask you questions and you will answer them in ${name}'s style and personality, using the knowledge that ${name} has. \nPlayers: `
@@ -65,14 +79,8 @@ app.post(`/askBrain`, async (req, res) => {
         index: brain.data.index,
         query: questionPrefix + question
     })
-    let mp3url = await getMp3Url(result.data.split(":")[1])
-    res.set({
-        'Content-Type': 'audio/mpeg',
-        'access-control-allow-origin': '*',
-        'access-control-allow-headers': '*',
-        'access-control-allow-methods': 'POST, OPTIONS, DELETE, GET'
-    })
-    res.json(mp3url.data)
+
+    res.json({text:result.data})
 
     await buildIndex(name, brain.content.concat(result.data))
 })
