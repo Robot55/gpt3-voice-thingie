@@ -78,15 +78,20 @@ app.get(`/getVoice`, async (req,res ) => {
 })
 
 app.post(`/askBrain`, async (req, res) => {
+    let start = new Date()-0;
+    let timings = {}
+
     const {name, question} = req.body
     const questionPrefix = `You are a NPC in a roleplaying game. You are playing as ${name}. The players will ask you questions and you will answer them in ${name}'s style and personality, using the knowledge that ${name} has. \nPlayers: `
 
+    timings["Start of Request to Python"] = new Date()-start
     let result = await axios.post(`${service_path}/queryCharacter`, {
         name,
         query: questionPrefix + question
     })
-
-    res.json({text:result.data})
+    timings["Python Return"] = new Date()-start
+    console.log(timings)
+    res.json({text:result.data, timings})
 
     updateIndex(name, (result.data)) // don't need to actually wait for the result on this call
 })

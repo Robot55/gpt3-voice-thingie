@@ -13,21 +13,46 @@ $(document).ready(() => {
     })
 
     $("#ask").click(async () => {
+        let start = new Date()-0;
         $("#loading").show()
         let res = await $.ajax("/askBrain",{
             type:'POST',
             data: JSON.stringify({name: $("#name").val(), question:$("#question").val()}),
             contentType: "application/json"
         })
+        let timings = res.timings
+         timings["Client displays written"] = new Date()-start
+        console.log(timings)
         let answer = res.text;
         $("#answer").text(answer)
-        console.log(answer)
 
 
-        $("#mp3_src").attr('src',`getVoice?text=${answer}&voiceId=Ag6Gw0sF8kVq9CAodbG3`)
-        $("#audioElement")[0].load()
-        $("#audioElement")[0].play()
+        timings["Voice Service Start"]= new Date()-start
+        $("#audios").html("")
+        let chunks = answer.split(". ");
+        let html = ""
+        for(let i in chunks) {
+            html+=`<audio id="audioElement_${i}" preload="auto"><source id="mp3_src_${i}" src="getVoice?text=${chunks[i]}. &voiceId=Ag6Gw0sF8kVq9CAodbG3" type="audio/mp3" /></audio>`
 
+        }
+        $("#audios").append(html)
+
+        for(let i in chunks) {
+            $(`#audioElement_${i}`)[0].load()
+        }
+
+        let currentTrack = 0
+        $(`#audioElement_${currentTrack}`)[0].play()
+        $(`#audioElement_${currentTrack}`).on("ended", () => {
+            currentTrack = currentTrack + 1;
+            $(`#audioElement_${currentTrack}`)[0].play()
+            $(`#audioElement_${currentTrack}`).on("ended", () => {
+                currentTrack = currentTrack + 1;
+                $(`#audioElement_${currentTrack}`)[0].play()
+            });
+        });
+        timings["Voice Service End"]= new Date()-start
+        console.log(timings)
 
         $("#loading").hide()
     })
