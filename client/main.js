@@ -3,7 +3,7 @@ $(document).ready(() => {
         $("#loading").show()
         let res = await $.ajax("/upsertBrain",{
             type:'POST',
-            data: JSON.stringify({name: $("#name").val(), content:[$("#brain").val()]}),
+            data: JSON.stringify({name: $("#name").val(), content:$("#brain").val()}),
             contentType: "application/json"
         })
         $("#loading").hide()
@@ -19,14 +19,15 @@ $(document).ready(() => {
             data: JSON.stringify({name: $("#name").val(), question:$("#question").val()}),
             contentType: "application/json"
         })
-        console.log(res)
+        let answer = res.text;
+        $("#answer").text(answer)
+        console.log(answer)
 
 
-
-        $("#mp3_src").attr('src',`getVoice?text=${res.text.split(":")[1]}&voiceId=Ag6Gw0sF8kVq9CAodbG3`)
+        $("#mp3_src").attr('src',`getVoice?text=${answer}&voiceId=Ag6Gw0sF8kVq9CAodbG3`)
         $("#audioElement")[0].load()
         $("#audioElement")[0].play()
-        $("#answer").text(res.text.split(":")[1])
+
 
         $("#loading").hide()
     })

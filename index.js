@@ -44,10 +44,18 @@ async function getMp3Url(text,voiceId) {
 }
 
 async function buildIndex(name, content) {
-    let result = await axios.post(`${service_path}/create_index`, {texts: content})
-    brains[name] = {content, data: result.data}
+    console.log({background: content, name})
+    content = content.replaceAll('"',"").replaceAll("\n","")
+    console.log({background: content, name})
+    let result = await axios.post(`${service_path}/character`, {background: content, name})
+    brains[name] = true
     fs.writeFileSync('./data.json', JSON.stringify(brains), 'utf-8');
     return result
+}
+
+function updateIndex(name, content) {
+    axios.put(`${service_path}/character`, {update: content, name})
+
 }
 
 app.post(`/upsertBrain`, async (req, res) => {
@@ -56,8 +64,6 @@ app.post(`/upsertBrain`, async (req, res) => {
     let result = await buildIndex(name, content)
     res.json(result.data)
 })
-
-
 
 app.get(`/getVoice`, async (req,res ) => {
     const {text, voiceId} = req.query
@@ -75,15 +81,14 @@ app.post(`/askBrain`, async (req, res) => {
     const {name, question} = req.body
     const questionPrefix = `You are a NPC in a roleplaying game. You are playing as ${name}. The players will ask you questions and you will answer them in ${name}'s style and personality, using the knowledge that ${name} has. \nPlayers: `
 
-    let brain = brains[name]
-    let result = await axios.post(`${service_path}/query_based_on_index`, {
-        index: brain.data.index,
+    let result = await axios.post(`${service_path}/queryCharacter`, {
+        name,
         query: questionPrefix + question
     })
 
     res.json({text:result.data})
 
-    await buildIndex(name, brain.content.concat(result.data))
+    updateIndex(name, (result.data)) // don't need to actually wait for the result on this call
 })
 
 const server = app.listen(3000, () =>

@@ -10,12 +10,18 @@
 <script src="./main.js"></script>
 <div id="brainCreator">
     Name of your Character: <br><input id="name"><br>
+    <hr>
+    If this character is not yet in the database, load an initial background here and it will be created:<br>
+    <pre>Hardcoded character list: Sildar Hallwinter</pre>
     Initial Brain Information:<br>
     <textarea id="brain"></textarea><br>
+
+
     <button id="createNewBrain">Create New Brain</button>
+    <hr>
 </div>
 <hr>
-<div id="questionArea" style="display:none">
+<div id="questionArea">
 Question:
 <textarea id="question"></textarea><button id="record">MicInput</button>
 <button id="ask">Ask</button>
