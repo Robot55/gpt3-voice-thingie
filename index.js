@@ -14,6 +14,7 @@ const apiKey = process.env.ELEVAN_LABS_API_KEY;
 
 console.log(service_path)
 app.use(express.json())
+app.use(express.static('client'))
 
 
 async function getMp3Url(text,voiceId) {
