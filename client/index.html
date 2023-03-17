@@ -1,1 +1,32 @@
-hello world
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Voice Client</title>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<script src="./main.js"></script>
+<div id="brainCreator">
+    Name of your Character: <br><input id="name"><br>
+    Initial Brain Information:<br>
+    <textarea id="brain"></textarea><br>
+    <button id="createNewBrain">Create New Brain</button>
+</div>
+<hr>
+<div id="questionArea" style="display:none">
+Question:
+<textarea id="question"></textarea><button id="record">MicInput</button>
+<button id="ask">Ask</button>
+<br>
+Answer:
+<textarea id="answer"></textarea><br>
+<audio id="audioElement">
+    <source id="mp3_src" src="getVoice?text=your father was seduced by the dark side of the force&voiceId=Ag6Gw0sF8kVq9CAodbG3" type="audio/mp3" />
+
+</audio>
+</div>
+<img src ="loading_icon.gif" id="loading" style="display:none">
+</body>
+</html>
