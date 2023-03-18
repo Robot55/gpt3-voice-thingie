@@ -65,6 +65,40 @@ app.post(`/upsertBrain`, async (req, res) => {
     res.json(result.data)
 })
 
+app.get('/voices',async (req, res) => {
+    let response = await axios(
+        {
+            method: 'GET',
+            url: `https://api.elevenlabs.io/v1/voices`,
+            headers: {
+                'xi-api-key': apiKey,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+
+    let answer = response.data.voices.map(({voice_id, name}) => {
+        return {voice_id, name}
+    })
+    console.log(answer)
+    res.json(answer)
+})
+
+app.post('/chat',async (req, res) => {
+    let {messages} = req.body
+    let response = await axios.post(`https://api.openai.com/v1/chat/completions`, {
+        model:"gpt-3.5-turbo",
+        messages
+    },{
+        headers: {
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        }
+    })
+    console.log(messages[messages.length-1],response.data.choices[0].message)
+    messages.push(response.data.choices[0].message)
+    res.json(messages)
+})
+
 app.get(`/getVoice`, async (req,res ) => {
     const {text, voiceId} = req.query
 
@@ -82,7 +116,7 @@ app.post(`/askBrain`, async (req, res) => {
     let timings = {}
 
     const {name, question} = req.body
-    const questionPrefix = `You are a NPC in a roleplaying game. You are playing as ${name}. The players will ask you questions and you will answer them in ${name}'s style and personality, using the knowledge that ${name} has. \nPlayers: `
+    const questionPrefix = `You are a NPC in a roleplaying game. You are playing as ${name}. The players will converse with you, and you should answer them in two forms: once with the ${name}'s style and personality, using the knowledge that ${name} has. And the second time, act hostile and annoyed with the players. Whenever possible, keep your answers short. \nPlayers: `
 
     timings["Start of Request to Python"] = new Date()-start
     let result = await axios.post(`${service_path}/queryCharacter`, {

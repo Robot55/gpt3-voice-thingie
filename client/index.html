@@ -4,32 +4,29 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>Voice Client</title>
+    <style>
+        textarea {
+            width:100%;
+            min-height:220px;
+        }
+    </style>
 </head>
 <body>
 <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
 <script src="./main.js"></script>
-<div id="brainCreator">
-    Name of your Character: <br><input id="name"><br>
-    <hr>
-    If this character is not yet in the database, load an initial background here and it will be created:<br>
-    <pre>Hardcoded character list: Sildar Hallwinter</pre>
-    Initial Brain Information:<br>
-    <textarea id="brain"></textarea><br>
-
-
-    <button id="createNewBrain">Create New Brain</button>
-    <hr>
-</div>
+Name of the Character: <input id="name">
+Voice of the Character: <select id="voices"></select><br>
+<hr>
+Character Background:
+<textarea id="background"></textarea>
 <hr>
 <div id="questionArea">
-Question:
-<textarea id="question"></textarea><button id="record">MicInput</button>
-<button id="ask">Ask</button>
-<br>
-Answer:
-<textarea id="answer"></textarea><br>
-<div id="audios"></div>
+    <textarea id="chatHistory"></textarea>
+The players say:
+<textarea id="question" style="min-height:110px"></textarea><button id="record">MicInput</button><button id="ask">Ask</button>
 
+<div id="audios"></div>
+    <audio id="audioElement" preload="auto"><source id="mp3_src"  type="audio/mp3" /></audio>
 </div>
 <img src ="loading_icon.gif" id="loading" style="display:none">
 </body>

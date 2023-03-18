@@ -1,4 +1,23 @@
+let temp_background=`You are Qelline Alderleaf. A wise female halfling of forty-five, Qelline Alderleaf is a pragmatic farmer who seems to know little of what goes on in town. She is a kind host, and is willing to let the characters stay in her hayloft if they don't want to stay at the Stonehill Inn.
+Qelline is a longtime friend of a druid named Reidoth. If she figures out that the characters are looking for specific sites in the area, such as Cragmaw Castle or Wave Echo Cave, she suggests that they visit Reidoth and ask for his help, 'since there's not an inch of the land he doesn't know.' She tells the characters that Reidoth recently set out for the ruins of a town called Thundertree, just west of the Neverwinter Wood. The ruins are about fifty miles northwest of Phandalin, and she provides directions so the characters can easily find the place. Qelline's son, Carp, is a spirited and precocious halfling lad of ten years. 
+She speaks as a poor medieval peasent with poor language skills`
+
+let temp_name = `Qelline`
+
 $(document).ready(() => {
+    $("#name").val(temp_name)
+    $("#background").val(temp_background)
+
+    async function start() {
+        let res = await $.getJSON("/voices");
+        res.map(({voice_id, name}) => {
+            $("#voices").append(`<option value='${voice_id}'>${name}</option>`)
+        })
+
+
+    }
+    start().catch(console.error)
+
     $("#createNewBrain").click(async () => {
         $("#loading").show()
         let res = await $.ajax("/upsertBrain",{
@@ -12,47 +31,65 @@ $(document).ready(() => {
         $("#questionArea").show()
     })
 
+    let messages = [];
+
+    function updateTextBox() {
+        let history = ""
+        messages.map((row) => {
+            history+=`${row.role}: ${row.content}\n`
+        })
+        $("#chatHistory").val(history)
+        $("#chatHistory")[0].scrollTop = $("#chatHistory")[0].scrollHeight;
+    }
+
     $("#ask").click(async () => {
+        let name = $("#name").val()
+        if(messages.length==0) {
+            messages.push({
+                "role": "user",
+                "content": `You are a NPC in a roleplaying game. The players, who are an adventuring party, will converse with you. You should answer in the form of dialogue for ${name}, keeping your answers brief and revealing as little information as possible.`
+            })
+            let background = $("#background").val();
+            if(background.length>5) {
+                let backgrounds = background.split("\n");
+                for(let i in backgrounds) {
+                    messages.push({
+                        "role": "user",
+                        "content": backgrounds[i]
+                    })
+                }
+            }
+        }
+        updateTextBox()
         let start = new Date()-0;
         $("#loading").show()
-        let res = await $.ajax("/askBrain",{
+
+        messages.push({
+            "role": "user",
+            "content": $("#question").val()
+        })
+        updateTextBox()
+
+
+        let res = await $.ajax("/chat",{
             type:'POST',
-            data: JSON.stringify({name: $("#name").val(), question:$("#question").val()}),
+            data: JSON.stringify({messages}),
             contentType: "application/json"
         })
-        let timings = res.timings
-         timings["Client displays written"] = new Date()-start
-        console.log(timings)
-        let answer = res.text;
-        $("#answer").text(answer)
+
+        messages = res;
+        $("#question").val("");
+        updateTextBox()
+
+        let answer = messages[messages.length-1].content
 
 
-        timings["Voice Service Start"]= new Date()-start
-        $("#audios").html("")
-        let chunks = answer.split(". ");
-        let html = ""
-        for(let i in chunks) {
-            html+=`<audio id="audioElement_${i}" preload="auto"><source id="mp3_src_${i}" src="getVoice?text=${chunks[i]}. &voiceId=Ag6Gw0sF8kVq9CAodbG3" type="audio/mp3" /></audio>`
+        $("#mp3_src").attr('src',`getVoice?text=${answer}&voiceId=${$("#voices").val()}`)
 
-        }
-        $("#audios").append(html)
+        $("#audioElement")[0].load()
+        $("#audioElement")[0].play()
 
-        for(let i in chunks) {
-            $(`#audioElement_${i}`)[0].load()
-        }
 
-        let currentTrack = 0
-        $(`#audioElement_${currentTrack}`)[0].play()
-        $(`#audioElement_${currentTrack}`).on("ended", () => {
-            currentTrack = currentTrack + 1;
-            $(`#audioElement_${currentTrack}`)[0].play()
-            $(`#audioElement_${currentTrack}`).on("ended", () => {
-                currentTrack = currentTrack + 1;
-                $(`#audioElement_${currentTrack}`)[0].play()
-            });
-        });
-        timings["Voice Service End"]= new Date()-start
-        console.log(timings)
 
         $("#loading").hide()
     })
